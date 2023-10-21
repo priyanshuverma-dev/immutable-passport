@@ -1,6 +1,6 @@
 "use client";
 
-import { initiateTransaction, logout, passportInstance } from "@/lib/immutable";
+import { initiateTransaction, passportInstance } from "@/lib/immutable";
 import React, { useEffect, useState } from "react";
 import TransactionComponent from "./TransactionComponent";
 
@@ -62,7 +62,7 @@ const LoggedInView = () => {
         </div>
         <button
           className="bg-red-500 hover:bg-red-700 transition-colors  text-white rounded-md p-2"
-          onClick={logout}
+          onClick={() => passportInstance.logout()}
         >
           Logout
         </button>
@@ -113,7 +113,7 @@ const LoggedInView = () => {
           </p>
         </div>
         <div className="my-3">
-          <TransactionComponent onTransactionInitiate={initiateTransaction} />
+          <TransactionComponent />
         </div>
       </div>
     </div>
