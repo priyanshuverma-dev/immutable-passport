@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Immutable Passport Integration Guide
 
-## Getting Started
+This guide explains how to integrate Immutable Passport into your application. Immutable Passport is a blockchain-based authentication and authorization service designed for gaming applications.
 
-First, run the development server:
+## Table of Contents
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- [Prerequisites](#prerequisites)
+- [1. Creating a Simple Application](#1-creating-a-simple-application)
+- [2. Registering the Application on Immutable Developer Hub](#2-registering-the-application-on-immutable-developer-hub)
+- [3. Installing and Initializing the Passport Client](#3-installing-and-initializing-the-passport-client)
+- [4. Logging in a User with Passport](#4-logging-in-a-user-with-passport)
+- [5. Displaying User Information](#5-displaying-user-information)
+- [6. Logging Out a User](#6-logging-out-a-user)
+- [7. Initiating a Transaction from Passport](#7-initiating-a-transaction-from-passport)
+
+## Prerequisites
+
+Before getting started, make sure you have the following:
+
+- An Immutable Developer Hub account.
+- A Next.js application or a similar web application.
+
+## 1. Creating a Simple Application
+
+You can create a simple Next.js application or clone a repository of a pre-built application. Ensure that your application is set up and running.
+
+## 2. Registering the Application on Immutable Developer Hub
+
+1. Sign in to your Immutable Developer Hub account.
+2. Register your application to obtain a client ID.
+3. add client ID to .env file `IMMUTABLE_CLIENT_ID="Client_ID"`
+
+## 3. Installing and Initializing the Passport Client
+
+In your application, you need to install the required dependencies and initialize the Passport client. Here is an example code snippet:
+
+```javascript
+import { config, passport } from "@imtbl/sdk";
+import { ethers } from "ethers";
+
+const passportConfig = {
+  clientId: process.env.IMMUTABLE_CLIENT_ID as string,
+  redirectUri: "http://localhost:3000/callback",
+  logoutRedirectUri: "http://localhost:3000/",
+  scope: "transact openid offline_access email",
+  audience: "platform_api",
+  baseConfig: new config.ImmutableConfiguration({
+    environment: config.Environment.SANDBOX, // Set the appropriate environment value
+    apiKey: "", // Provide the apiKey if required
+  }),
+};
+const passportInstance = new passport.Passport(passportConfig);
+const passportProvider = passportInstance.connectEvm();
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 4. Logging in a User with Passport
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To log in a user, use the following code snippet:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```javascript
+import { passportProvider, fetchAuth } from "@/lib/immutable";
 
-## Learn More
+const fetchAuth = async () => {
+  try {
+    const accounts = await passportProvider.request({
+      method: "eth_requestAccounts",
+    });
+    console.log("Connected");
+    console.log(accounts);
+  } catch (error) {
+    console.log(error);
+  }
+};
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 5. Displaying User Information
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+You can display user information, including the ID token and access token. Use the provided code to fetch and display user data.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```javascript
+import { passportInstance } from "@/lib/immutable";
 
-## Deploy on Vercel
+const fetchUser = async () => {
+  try {
+    const userProfile = await passportInstance.getUserInfo();
+    const accessToken = await passportInstance.getAccessToken();
+    const idToken = await passportInstance.getIdToken();
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+    // Display user information on your app
+  } catch (error) {
+    console.log(error);
+  }
+};
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 6. Logging Out a User
+
+To log out a user, use the following code:
+
+```javascript
+import { passportInstance } from "@/lib/immutable";
+
+const handleLogout = () => {
+  passportInstance.logout();
+};
+```
+
+## 7. Initiating a Transaction from Passport
+
+You can initiate a transaction using Passport. Make sure to provide the necessary transaction data and parameters:
+
+```javascript
+import { passportProvider, initiateTransaction } from "@/lib/immutable";
+
+const handleTransaction = async (data) => {
+  try {
+    const transactionHash = await initiateTransaction({ data });
+    // Handle the transaction response
+  } catch (error) {
+    console.error(error);
+  }
+};
+```
+
+That's it! You've successfully integrated Immutable Passport into your application.
